@@ -70,8 +70,8 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
     final page = ref.watch(currentPageProvider) ?? widget.page;
     final themeData = ref.watch(currentThemeDataProvider);
     final fontData = ref.watch(currentFontDataProvider);
-    final dayStr = DateFormat('d', 'ko_KR').format(_currentDate);
-    final monthStr = DateFormat('M월', 'ko_KR').format(_currentDate);
+    final dayNum = _currentDate.day;
+    final monthNum = _currentDate.month;
     final weekdayStr = DateFormat('EEEE', 'ko_KR').format(_currentDate);
 
     return Scaffold(
@@ -132,7 +132,7 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            '$monthStr $dayStr일',
+                            '$monthNum월 $dayNum일',
                             style: getAppFont(fontData.googleFontName, 16,
                                 themeData.textPrimary),
                           ),

@@ -20,7 +20,7 @@ class HomeScreen extends ConsumerWidget {
     final selectedDate = ref.watch(selectedDateProvider);
     final themeData = ref.watch(currentThemeDataProvider);
     final fontData = ref.watch(currentFontDataProvider);
-    final dayStr = DateFormat('d', 'ko_KR').format(selectedDate);
+    final dayNum = selectedDate.day;
     final monthYear = DateFormat('yyyy. MM', 'ko_KR').format(selectedDate);
     final dayOfWeek = DateFormat('EEEE', 'ko_KR').format(selectedDate);
 
@@ -112,7 +112,7 @@ class HomeScreen extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    '$dayStr일',
+                                    '$dayNum일',
                                     style: getAppFont(
                                       fontData.googleFontName,
                                       36,
