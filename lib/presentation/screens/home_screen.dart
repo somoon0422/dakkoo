@@ -286,51 +286,75 @@ class HomeScreen extends ConsumerWidget {
 
   void _showExportDialog(BuildContext context, WidgetRef ref,
       AppThemeData themeData, AppFontData fontData) {
-    showModalBottomSheet(
+    showGeneralDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: themeData.surface,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '내보내기',
-                style: getAppFont(
-                    fontData.googleFontName, 18, themeData.textPrimary),
+      barrierDismissible: true,
+      barrierLabel: 'dismiss',
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      transitionDuration: const Duration(milliseconds: 250),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.9, end: 1.0).animate(curved),
+          child: FadeTransition(opacity: curved, child: child),
+        );
+      },
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.82,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              decoration: BoxDecoration(
+                color: themeData.surface,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              _ExportOption(
-                icon: Icons.picture_as_pdf_rounded,
-                color: AppColors.accent,
-                label: 'PDF로 내보내기',
-                fontData: fontData,
-                themeData: themeData,
-                onTap: () {
-                  Navigator.pop(context);
-                  _exportAs(context, ref, 'pdf');
-                },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '내보내기',
+                    style: getAppFont(
+                        fontData.googleFontName, 18, themeData.textPrimary),
+                  ),
+                  const SizedBox(height: 20),
+                  _ExportOption(
+                    icon: Icons.picture_as_pdf_rounded,
+                    color: AppColors.accent,
+                    label: 'PDF로 내보내기',
+                    fontData: fontData,
+                    themeData: themeData,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _exportAs(context, ref, 'pdf');
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  _ExportOption(
+                    icon: Icons.folder_zip_rounded,
+                    color: AppColors.accentBlue,
+                    label: 'ZIP으로 내보내기',
+                    fontData: fontData,
+                    themeData: themeData,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _exportAs(context, ref, 'zip');
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              _ExportOption(
-                icon: Icons.folder_zip_rounded,
-                color: AppColors.accentBlue,
-                label: 'ZIP으로 내보내기',
-                fontData: fontData,
-                themeData: themeData,
-                onTap: () {
-                  Navigator.pop(context);
-                  _exportAs(context, ref, 'zip');
-                },
-              ),
-              const SizedBox(height: 8),
-            ],
+            ),
           ),
         );
       },

@@ -405,65 +405,94 @@ class CalendarView extends ConsumerWidget {
     final dateStr = DateFormat('yyyy-MM-dd').format(date);
     final dayStr = DateFormat('M월 d일', 'ko_KR').format(date);
 
-    showModalBottomSheet(
+    showGeneralDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => Container(
-        height: MediaQuery.of(context).size.height * 0.5,
-        decoration: BoxDecoration(
-          color: themeData.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          children: [
-            const SizedBox(height: 12),
-            Container(
-              width: 36,
-              height: 4,
+      barrierDismissible: true,
+      barrierLabel: 'dismiss',
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      transitionDuration: const Duration(milliseconds: 250),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.9, end: 1.0).animate(curved),
+          child: FadeTransition(opacity: curved, child: child),
+        );
+      },
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.88,
+              height: MediaQuery.of(context).size.height * 0.55,
+              padding: const EdgeInsets.fromLTRB(16, 20, 16, 10),
               decoration: BoxDecoration(
-                color: themeData.divider,
-                borderRadius: BorderRadius.circular(2),
+                color: themeData.surface,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(width: 32),
+                      Text(
+                        '$dayStr 스티커',
+                        style: getAppFont(fontData.googleFontName, 16,
+                            themeData.textPrimary),
+                      ),
+                      Pressable(
+                        onTap: () => Navigator.pop(context),
+                        child: Icon(Icons.close_rounded,
+                            size: 22, color: themeData.textSecondary),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Pressable(
+                    onTap: () async {
+                      final db = ref.read(localDatabaseProvider);
+                      await db.deleteCalendarStickersByDate(dateStr);
+                      ref.invalidate(calendarStickersProvider);
+                      if (context.mounted) Navigator.pop(context);
+                    },
+                    child: Text(
+                      '스티커 지우기',
+                      style: getAppFont(
+                          fontData.googleFontName, 12, AppColors.accent),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: StickerPicker(
+                      onStickerSelected: (emoji) async {
+                        final db = ref.read(localDatabaseProvider);
+                        await db.insertCalendarSticker(
+                          const Uuid().v4(),
+                          dateStr,
+                          emoji,
+                        );
+                        ref.invalidate(calendarStickersProvider);
+                        if (context.mounted) Navigator.pop(context);
+                      },
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 14),
-            Text(
-              '$dayStr 스티커',
-              style: getAppFont(
-                  fontData.googleFontName, 16, themeData.textPrimary),
-            ),
-            const SizedBox(height: 4),
-            Pressable(
-              onTap: () async {
-                final db = ref.read(localDatabaseProvider);
-                await db.deleteCalendarStickersByDate(dateStr);
-                ref.invalidate(calendarStickersProvider);
-                if (context.mounted) Navigator.pop(context);
-              },
-              child: Text(
-                '스티커 지우기',
-                style: getAppFont(
-                    fontData.googleFontName, 12, AppColors.accent),
-              ),
-            ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: StickerPicker(
-                onStickerSelected: (emoji) async {
-                  final db = ref.read(localDatabaseProvider);
-                  await db.insertCalendarSticker(
-                    const Uuid().v4(),
-                    dateStr,
-                    emoji,
-                  );
-                  ref.invalidate(calendarStickersProvider);
-                  if (context.mounted) Navigator.pop(context);
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 }
