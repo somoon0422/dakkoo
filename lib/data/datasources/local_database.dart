@@ -128,10 +128,20 @@ class LocalDatabase {
 
   Future<List<String>> getDatesWithEntries() async {
     if (_isWeb) {
-      return _memPages.map((m) => m['date'] as String).toList();
+      // 실제 엘리먼트가 있는 페이지만 반환
+      final pageIdsWithElements =
+          _memElements.map((e) => e['page_id'] as String).toSet();
+      return _memPages
+          .where((p) => pageIdsWithElements.contains(p['id']))
+          .map((m) => m['date'] as String)
+          .toList();
     }
     final db = await database;
-    final maps = await db.query('diary_pages', columns: ['date']);
+    final maps = await db.rawQuery('''
+      SELECT DISTINCT dp.date
+      FROM diary_pages dp
+      INNER JOIN elements e ON e.page_id = dp.id
+    ''');
     return maps.map((m) => m['date'] as String).toList();
   }
 
