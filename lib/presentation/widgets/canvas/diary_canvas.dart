@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import '../../../app.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../domain/entities/diary_element.dart';
 import '../../../domain/entities/diary_page.dart';
 import '../../providers/canvas_providers.dart';
+import '../../providers/theme_providers.dart';
 import '../common/pressable.dart';
 import 'canvas_element.dart';
 import 'drawing_painter.dart';
@@ -203,6 +204,9 @@ class _DiaryCanvasState extends ConsumerState<DiaryCanvas> {
   }
 
   Widget _buildImageArea(List<DiaryElement> imageElements) {
+    final themeData = ref.watch(currentThemeDataProvider);
+    final fontData = ref.watch(currentFontDataProvider);
+
     return Pressable(
       onTap: widget.onTapImageArea,
       scaleFactor: 0.98,
@@ -211,12 +215,12 @@ class _DiaryCanvasState extends ConsumerState<DiaryCanvas> {
         width: double.infinity,
         decoration: BoxDecoration(
           color: imageElements.isNotEmpty
-              ? AppColors.divider.withValues(alpha: 0.3)
-              : AppColors.surface,
+              ? themeData.divider.withValues(alpha: 0.3)
+              : themeData.surface,
           borderRadius: BorderRadius.circular(16),
           border: imageElements.isEmpty
               ? Border.all(
-                  color: AppColors.divider,
+                  color: themeData.divider,
                   width: 1,
                   strokeAlign: BorderSide.strokeAlignInside,
                 )
@@ -237,14 +241,12 @@ class _DiaryCanvasState extends ConsumerState<DiaryCanvas> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.image_rounded,
-                          size: 40, color: AppColors.textHint),
+                          size: 40, color: themeData.textSecondary),
                       const SizedBox(height: 4),
                       Text(
                         '사진이 추가됨',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
-                        ),
+                        style: getAppFont(fontData.googleFontName, 13,
+                            themeData.textSecondary),
                       ),
                     ],
                   ),
@@ -256,19 +258,17 @@ class _DiaryCanvasState extends ConsumerState<DiaryCanvas> {
                       Container(
                         padding: const EdgeInsets.all(14),
                         decoration: BoxDecoration(
-                          color: AppColors.divider.withValues(alpha: 0.3),
+                          color: themeData.divider.withValues(alpha: 0.3),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(Icons.add_rounded,
-                            size: 28, color: AppColors.textHint),
+                            size: 28, color: themeData.textSecondary),
                       ),
                       const SizedBox(height: 10),
                       Text(
                         '사진 추가',
-                        style: GoogleFonts.notoSans(
-                          fontSize: 13,
-                          color: AppColors.textHint,
-                        ),
+                        style: getAppFont(fontData.googleFontName, 13,
+                            themeData.textSecondary.withValues(alpha: 0.6)),
                       ),
                     ],
                   ),
@@ -280,12 +280,15 @@ class _DiaryCanvasState extends ConsumerState<DiaryCanvas> {
 
   /// 인라인 텍스트 — 바로 여기서 일기 작성
   Widget _buildInlineTextArea() {
+    final fontData = ref.watch(currentFontDataProvider);
+    final themeData = ref.watch(currentThemeDataProvider);
+
     return Container(
       width: double.infinity,
       constraints: const BoxConstraints(minHeight: 300),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: themeData.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -299,22 +302,23 @@ class _DiaryCanvasState extends ConsumerState<DiaryCanvas> {
         controller: _textController,
         focusNode: _focusNode,
         maxLines: null,
-        style: GoogleFonts.gowunBatang(
-          fontSize: 16,
-          color: AppColors.textPrimary,
+        style: getAppFont(
+          fontData.googleFontName,
+          16,
+          themeData.textPrimary,
           height: 2.0,
         ),
         decoration: InputDecoration(
           border: InputBorder.none,
           hintText: '오늘 하루를 기록해보세요...',
-          hintStyle: GoogleFonts.gowunBatang(
-            fontSize: 16,
-            color: AppColors.textHint,
+          hintStyle: getAppFont(
+            fontData.googleFontName,
+            16,
+            themeData.textSecondary.withValues(alpha: 0.5),
             height: 2.0,
           ),
         ),
         onChanged: (_) {
-          // Auto-save on change (debounced)
           _saveCurrentText();
         },
       ),

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import '../../app.dart';
 import '../../core/constants/app_colors.dart';
 import '../providers/diary_providers.dart';
+import '../providers/theme_providers.dart';
 import '../widgets/common/pressable.dart';
 import '../widgets/home/calendar_view.dart';
 import 'diary_canvas_screen.dart';
@@ -16,161 +17,144 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedDate = ref.watch(selectedDateProvider);
+    final themeData = ref.watch(currentThemeDataProvider);
+    final fontData = ref.watch(currentFontDataProvider);
     final dayStr = DateFormat('d', 'ko_KR').format(selectedDate);
     final monthYear = DateFormat('yyyy. MM', 'ko_KR').format(selectedDate);
     final dayOfWeek = DateFormat('EEEE', 'ko_KR').format(selectedDate);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: themeData.background,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
                 // Top bar
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       '다꾸',
-                      style: GoogleFonts.gowunBatang(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
+                      style: getAppFont(
+                          fontData.googleFontName, 26, themeData.textPrimary),
                     ),
                     Row(
                       children: [
-                        Pressable(
-                          onTap: () => _showExportDialog(context, ref),
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.04),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(Icons.ios_share_rounded,
-                                size: 20, color: AppColors.textSecondary),
-                          ),
+                        _iconButton(
+                          Icons.ios_share_rounded,
+                          themeData,
+                          () => _showExportDialog(context, ref, themeData, fontData),
                         ),
                         const SizedBox(width: 8),
-                        Pressable(
-                          onTap: () => Navigator.push(
+                        _iconButton(
+                          Icons.tune_rounded,
+                          themeData,
+                          () => Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (_) => const SettingsScreen()),
-                          ),
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.04),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: const Icon(Icons.tune_rounded,
-                                size: 20, color: AppColors.textSecondary),
                           ),
                         ),
                       ],
                     ),
                   ],
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 20),
 
-                // Big date card
+                // Date card — 크기 축소
                 Pressable(
                   onTap: () => _openDiaryPage(context, ref, selectedDate),
                   scaleFactor: 0.97,
                   child: Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(28),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 22, vertical: 18),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
-                        colors: [Color(0xFF2D2D2D), Color(0xFF4A4A4A)],
+                        colors: [
+                          themeData.primary,
+                          themeData.primary.withValues(alpha: 0.75),
+                        ],
                       ),
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.15),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
+                          color: themeData.primary.withValues(alpha: 0.25),
+                          blurRadius: 16,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          monthYear,
-                          style: GoogleFonts.notoSans(
-                            fontSize: 14,
-                            color: Colors.white.withValues(alpha: 0.6),
-                            letterSpacing: 2,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Text(
-                              dayStr,
-                              style: GoogleFonts.notoSans(
-                                fontSize: 72,
-                                fontWeight: FontWeight.w200,
-                                color: Colors.white,
-                                height: 1.0,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 10),
-                              child: Text(
-                                dayOfWeek,
-                                style: GoogleFonts.notoSans(
-                                  fontSize: 16,
-                                  color: Colors.white.withValues(alpha: 0.5),
+                        // Left: date info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                monthYear,
+                                style: getAppFont(
+                                  fontData.googleFontName,
+                                  12,
+                                  Colors.white.withValues(alpha: 0.6),
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 2),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    '$dayStr일',
+                                    style: getAppFont(
+                                      fontData.googleFontName,
+                                      36,
+                                      Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Padding(
+                                    padding: const EdgeInsets.only(bottom: 4),
+                                    child: Text(
+                                      dayOfWeek,
+                                      style: getAppFont(
+                                        fontData.googleFontName,
+                                        13,
+                                        Colors.white.withValues(alpha: 0.5),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 20),
+                        // Right: write button
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 10),
+                              horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
+                            color: Colors.white.withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(Icons.edit_rounded,
-                                  size: 16, color: Colors.white70),
-                              const SizedBox(width: 8),
+                                  size: 14, color: Colors.white70),
+                              const SizedBox(width: 6),
                               Text(
-                                '오늘의 일기 쓰기',
-                                style: GoogleFonts.notoSans(
-                                  fontSize: 14,
-                                  color: Colors.white.withValues(alpha: 0.9),
+                                '일기 쓰기',
+                                style: getAppFont(
+                                  fontData.googleFontName,
+                                  13,
+                                  Colors.white.withValues(alpha: 0.9),
                                 ),
                               ),
                             ],
@@ -180,12 +164,12 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 20),
 
                 // Calendar
                 Container(
                   decoration: BoxDecoration(
-                    color: AppColors.surface,
+                    color: themeData.surface,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
@@ -210,6 +194,28 @@ class HomeScreen extends ConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _iconButton(
+      IconData icon, AppThemeData themeData, VoidCallback onTap) {
+    return Pressable(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: themeData.surface,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Icon(icon, size: 20, color: themeData.textSecondary),
       ),
     );
   }
@@ -247,7 +253,8 @@ class HomeScreen extends ConsumerWidget {
     }
   }
 
-  void _showExportDialog(BuildContext context, WidgetRef ref) {
+  void _showExportDialog(BuildContext context, WidgetRef ref,
+      AppThemeData themeData, AppFontData fontData) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -255,7 +262,7 @@ class HomeScreen extends ConsumerWidget {
         return Container(
           margin: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.surface,
+            color: themeData.surface,
             borderRadius: BorderRadius.circular(20),
           ),
           padding: const EdgeInsets.all(24),
@@ -264,17 +271,16 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Text(
                 '내보내기',
-                style: GoogleFonts.notoSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
-                ),
+                style: getAppFont(
+                    fontData.googleFontName, 18, themeData.textPrimary),
               ),
               const SizedBox(height: 20),
               _ExportOption(
                 icon: Icons.picture_as_pdf_rounded,
                 color: AppColors.accent,
                 label: 'PDF로 내보내기',
+                fontData: fontData,
+                themeData: themeData,
                 onTap: () {
                   Navigator.pop(context);
                   _exportAs(context, ref, 'pdf');
@@ -285,6 +291,8 @@ class HomeScreen extends ConsumerWidget {
                 icon: Icons.folder_zip_rounded,
                 color: AppColors.accentBlue,
                 label: 'ZIP으로 내보내기',
+                fontData: fontData,
+                themeData: themeData,
                 onTap: () {
                   Navigator.pop(context);
                   _exportAs(context, ref, 'zip');
@@ -305,16 +313,17 @@ class HomeScreen extends ConsumerWidget {
   ) async {
     final exportRepo = ref.read(exportRepositoryProvider);
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('내보내기 준비 중...',
-              style: GoogleFonts.notoSans(fontSize: 14)),
-          backgroundColor: AppColors.primary,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('내보내기 준비 중...'),
+            backgroundColor: AppColors.primary,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
       String filePath;
       if (format == 'pdf') {
         filePath = await exportRepo.exportAsPdf();
@@ -326,8 +335,7 @@ class HomeScreen extends ConsumerWidget {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('내보내기 실패: $e',
-                style: GoogleFonts.notoSans(fontSize: 14)),
+            content: Text('내보내기 실패: $e'),
             backgroundColor: AppColors.accent,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -344,12 +352,16 @@ class _ExportOption extends StatelessWidget {
   final Color color;
   final String label;
   final VoidCallback onTap;
+  final AppFontData fontData;
+  final AppThemeData themeData;
 
   const _ExportOption({
     required this.icon,
     required this.color,
     required this.label,
     required this.onTap,
+    required this.fontData,
+    required this.themeData,
   });
 
   @override
@@ -369,11 +381,8 @@ class _ExportOption extends StatelessWidget {
             const SizedBox(width: 12),
             Text(
               label,
-              style: GoogleFonts.notoSans(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-              ),
+              style: getAppFont(
+                  fontData.googleFontName, 15, themeData.textPrimary),
             ),
           ],
         ),

@@ -12,6 +12,7 @@ class LocalDatabase {
   // In-memory storage for web
   static final List<Map<String, dynamic>> _memPages = [];
   static final List<Map<String, dynamic>> _memElements = [];
+  static final List<Map<String, dynamic>> _memCalendarStickers = [];
 
   bool get _isWeb => kIsWeb;
 
@@ -65,6 +66,18 @@ class LocalDatabase {
     );
     await db.execute(
       'CREATE INDEX idx_diary_pages_date ON diary_pages(date)',
+    );
+
+    await db.execute('''
+      CREATE TABLE calendar_stickers (
+        id TEXT PRIMARY KEY,
+        date TEXT NOT NULL,
+        emoji TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX idx_calendar_stickers_date ON calendar_stickers(date)',
     );
   }
 
@@ -235,6 +248,65 @@ class LocalDatabase {
     }
     final db = await database;
     await db.delete('elements', where: 'page_id = ?', whereArgs: [pageId]);
+  }
+
+  // Calendar sticker operations
+  Future<void> insertCalendarSticker(String id, String date, String emoji) async {
+    if (_isWeb) {
+      _memCalendarStickers.add({
+        'id': id,
+        'date': date,
+        'emoji': emoji,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+      return;
+    }
+    final db = await database;
+    await db.insert('calendar_stickers', {
+      'id': id,
+      'date': date,
+      'emoji': emoji,
+      'created_at': DateTime.now().toIso8601String(),
+    });
+  }
+
+  Future<Map<String, List<String>>> getAllCalendarStickers() async {
+    if (_isWeb) {
+      final result = <String, List<String>>{};
+      for (final s in _memCalendarStickers) {
+        final date = s['date'] as String;
+        result.putIfAbsent(date, () => []);
+        result[date]!.add(s['emoji'] as String);
+      }
+      return result;
+    }
+    final db = await database;
+    final maps = await db.query('calendar_stickers', orderBy: 'created_at ASC');
+    final result = <String, List<String>>{};
+    for (final m in maps) {
+      final date = m['date'] as String;
+      result.putIfAbsent(date, () => []);
+      result[date]!.add(m['emoji'] as String);
+    }
+    return result;
+  }
+
+  Future<void> deleteCalendarSticker(String id) async {
+    if (_isWeb) {
+      _memCalendarStickers.removeWhere((s) => s['id'] == id);
+      return;
+    }
+    final db = await database;
+    await db.delete('calendar_stickers', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> deleteCalendarStickersByDate(String date) async {
+    if (_isWeb) {
+      _memCalendarStickers.removeWhere((s) => s['date'] == date);
+      return;
+    }
+    final db = await database;
+    await db.delete('calendar_stickers', where: 'date = ?', whereArgs: [date]);
   }
 
   // For export

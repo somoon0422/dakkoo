@@ -41,6 +41,13 @@ final pageForDateProvider =
   return repo.createPage(date);
 });
 
+// Calendar stickers: date string -> list of emoji
+final calendarStickersProvider =
+    FutureProvider<Map<String, List<String>>>((ref) async {
+  final db = ref.watch(localDatabaseProvider);
+  return db.getAllCalendarStickers();
+});
+
 // Selected date for calendar
 final selectedDateProvider = StateProvider<DateTime>((ref) {
   final now = DateTime.now();

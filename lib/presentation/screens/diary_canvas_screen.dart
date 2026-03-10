@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import '../../app.dart';
 import '../../core/constants/app_colors.dart';
 import '../../core/utils/image_utils.dart';
 import '../../domain/entities/diary_page.dart';
 import '../providers/canvas_providers.dart';
 import '../providers/diary_providers.dart';
+import '../providers/theme_providers.dart';
 import '../widgets/canvas/diary_canvas.dart';
 import '../widgets/canvas/toolbar.dart';
 import '../widgets/common/pressable.dart';
@@ -66,12 +68,14 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
   @override
   Widget build(BuildContext context) {
     final page = ref.watch(currentPageProvider) ?? widget.page;
+    final themeData = ref.watch(currentThemeDataProvider);
+    final fontData = ref.watch(currentFontDataProvider);
     final dayStr = DateFormat('d', 'ko_KR').format(_currentDate);
     final monthStr = DateFormat('M월', 'ko_KR').format(_currentDate);
     final weekdayStr = DateFormat('EEEE', 'ko_KR').format(_currentDate);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: themeData.background,
       body: SafeArea(
         child: Column(
           children: [
@@ -90,7 +94,7 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: themeData.surface,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
@@ -100,8 +104,8 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded,
-                          size: 18, color: AppColors.textPrimary),
+                      child: Icon(Icons.arrow_back_ios_new_rounded,
+                          size: 18, color: themeData.textPrimary),
                     ),
                   ),
 
@@ -114,7 +118,7 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: themeData.surface,
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
@@ -129,23 +133,18 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                         children: [
                           Text(
                             '$monthStr $dayStr일',
-                            style: GoogleFonts.gowunBatang(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
-                            ),
+                            style: getAppFont(fontData.googleFontName, 16,
+                                themeData.textPrimary),
                           ),
                           const SizedBox(width: 6),
                           Text(
                             weekdayStr,
-                            style: GoogleFonts.notoSans(
-                              fontSize: 12,
-                              color: AppColors.textSecondary,
-                            ),
+                            style: getAppFont(fontData.googleFontName, 12,
+                                themeData.textSecondary),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(Icons.keyboard_arrow_down_rounded,
-                              size: 18, color: AppColors.textSecondary),
+                          Icon(Icons.keyboard_arrow_down_rounded,
+                              size: 18, color: themeData.textSecondary),
                         ],
                       ),
                     ),
@@ -161,7 +160,7 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                     icon: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: AppColors.surface,
+                        color: themeData.surface,
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
@@ -171,8 +170,8 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(Icons.palette_outlined,
-                          size: 18, color: AppColors.textPrimary),
+                      child: Icon(Icons.palette_outlined,
+                          size: 18, color: themeData.textPrimary),
                     ),
                     onSelected: (bg) async {
                       final updated = page.copyWith(
@@ -229,7 +228,7 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                           margin: const EdgeInsets.only(left: 4),
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: AppColors.surface.withValues(alpha: 0.9),
+                            color: themeData.surface.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
@@ -238,9 +237,9 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.chevron_left_rounded,
-                            color: AppColors.textSecondary,
+                            color: themeData.textSecondary,
                             size: 22,
                           ),
                         ),
@@ -260,7 +259,7 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                           margin: const EdgeInsets.only(right: 4),
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: AppColors.surface.withValues(alpha: 0.9),
+                            color: themeData.surface.withValues(alpha: 0.9),
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
@@ -269,9 +268,9 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
                               ),
                             ],
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.chevron_right_rounded,
-                            color: AppColors.textSecondary,
+                            color: themeData.textSecondary,
                             size: 22,
                           ),
                         ),
