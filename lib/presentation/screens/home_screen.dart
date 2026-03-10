@@ -28,12 +28,13 @@ class HomeScreen extends ConsumerWidget {
       backgroundColor: themeData.background,
       body: SafeArea(
         child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 // Top bar
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -41,7 +42,7 @@ class HomeScreen extends ConsumerWidget {
                     Text(
                       '다꾸',
                       style: getAppFont(
-                          fontData.googleFontName, 26, themeData.textPrimary),
+                          fontData.googleFontName, 24, themeData.textPrimary),
                     ),
                     Row(
                       children: [
@@ -64,31 +65,31 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
 
-                // Date card — 크기 축소
+                // Date card — 컴팩트 + 세련
                 Pressable(
                   onTap: () => _openDiaryPage(context, ref, selectedDate),
                   scaleFactor: 0.97,
                   child: Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 22, vertical: 18),
+                        horizontal: 20, vertical: 16),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                         colors: [
                           themeData.primary,
-                          themeData.primary.withValues(alpha: 0.75),
+                          themeData.primary.withValues(alpha: 0.7),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: themeData.primary.withValues(alpha: 0.25),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
+                          color: themeData.primary.withValues(alpha: 0.2),
+                          blurRadius: 14,
+                          offset: const Offset(0, 5),
                         ),
                       ],
                     ),
@@ -103,11 +104,11 @@ class HomeScreen extends ConsumerWidget {
                                 monthYear,
                                 style: getAppFont(
                                   fontData.googleFontName,
-                                  12,
-                                  Colors.white.withValues(alpha: 0.6),
+                                  11,
+                                  Colors.white.withValues(alpha: 0.55),
                                 ),
                               ),
-                              const SizedBox(height: 2),
+                              const SizedBox(height: 1),
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
@@ -115,19 +116,19 @@ class HomeScreen extends ConsumerWidget {
                                     '$dayNum일',
                                     style: getAppFont(
                                       fontData.googleFontName,
-                                      36,
+                                      32,
                                       Colors.white,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: 4),
+                                    padding: const EdgeInsets.only(bottom: 3),
                                     child: Text(
                                       dayOfWeek,
                                       style: getAppFont(
                                         fontData.googleFontName,
-                                        13,
-                                        Colors.white.withValues(alpha: 0.5),
+                                        12,
+                                        Colors.white.withValues(alpha: 0.45),
                                       ),
                                     ),
                                   ),
@@ -148,13 +149,13 @@ class HomeScreen extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const Icon(Icons.edit_rounded,
-                                  size: 14, color: Colors.white70),
+                                  size: 13, color: Colors.white70),
                               const SizedBox(width: 6),
                               Text(
                                 '일기 쓰기',
                                 style: getAppFont(
                                   fontData.googleFontName,
-                                  13,
+                                  12,
                                   Colors.white.withValues(alpha: 0.9),
                                 ),
                               ),
@@ -165,23 +166,23 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
 
-                // Calendar
+                // Calendar — 컴팩트
                 Container(
                   decoration: BoxDecoration(
                     color: themeData.surface,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(18),
                     child: CalendarView(
                       onDateSelected: (date) {
                         ref.read(selectedDateProvider.notifier).state = date;
@@ -194,7 +195,7 @@ class HomeScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
               ],
             ),
           ),

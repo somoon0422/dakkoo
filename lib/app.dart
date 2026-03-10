@@ -127,6 +127,27 @@ class DakkooApp extends ConsumerWidget {
       case 'Sunflower':
         return GoogleFonts.sunflower(
             fontSize: size, color: color, height: height);
+      // 새로 추가된 폰트
+      case 'Hi Melody':
+        return GoogleFonts.hiMelody(
+            fontSize: size, color: color, height: height);
+      case 'Cute Font':
+        return GoogleFonts.cuteFont(
+            fontSize: size, color: color, height: height);
+      case 'Song Myung':
+        return GoogleFonts.songMyung(
+            fontSize: size, color: color, height: height);
+      case 'Gugi':
+        return GoogleFonts.gugi(fontSize: size, color: color, height: height);
+      case 'Stylish':
+        return GoogleFonts.stylish(
+            fontSize: size, color: color, height: height);
+      case 'Yeon Sung':
+        return GoogleFonts.yeonSung(
+            fontSize: size, color: color, height: height);
+      case 'Kirang Haerang':
+        return GoogleFonts.kirangHaerang(
+            fontSize: size, color: color, height: height);
       default:
         return GoogleFonts.gowunBatang(
             fontSize: size, color: color, height: height);

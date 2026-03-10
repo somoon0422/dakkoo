@@ -13,26 +13,41 @@ enum AppThemeType {
 
 /// 앱 폰트 종류
 enum AppFontType {
-  gowunBatang, // 고운 바탕
-  gowunDodum, // 고운 돋움
-  nanumPen, // 나눔 손글씨 펜
-  nanumGothic, // 나눔 고딕
-  nanumMyeongjo, // 나눔 명조
-  gaegu, // 개구
-  poorStory, // 푸어스토리
-  gamja, // 감자꽃마을
-  dokdo, // 독도
-  singleDay, // 싱글데이
-  eastSeaDokdo, // 동해독도
-  gothicA1, // 고딕 A1
-  doHyeon, // 도현
-  jua, // 주아
-  blackHanSans, // 블랙한산스
-  sunflower, // 해바라기
-  notoSansKr, // Noto Sans KR
-  notoSerifKr, // Noto Serif KR
-  ibmPlexSansKr, // IBM Plex Sans KR
-  nanumBrush, // 나눔 붓글씨
+  // 손글씨
+  gowunBatang,
+  nanumPen,
+  nanumBrush,
+  gaegu,
+  poorStory,
+  gamja,
+  singleDay,
+  hiMelody,
+  cuteFont,
+  yeongdeok,
+
+  // 명조
+  notoSerifKr,
+  nanumMyeongjo,
+  songMyung,
+
+  // 고딕
+  gowunDodum,
+  gothicA1,
+  notoSansKr,
+  ibmPlexSansKr,
+  nanumGothic,
+  sunflower,
+
+  // 디스플레이
+  dokdo,
+  eastSeaDokdo,
+  doHyeon,
+  jua,
+  blackHanSans,
+  gugi,
+  stylish,
+  yeonSung,
+  kirangHaerang,
 }
 
 /// 테마 데이터
@@ -154,18 +169,13 @@ const themeDataMap = {
   ),
 };
 
-// 폰트 목록 — 카테고리별 정리
+// 폰트 목록 — 카테고리별 정리 (28개)
 const fontDataMap = {
-  // 감성 / 손글씨
+  // ── 손글씨 ──
   AppFontType.gowunBatang: AppFontData(
     name: '고운 바탕',
     googleFontName: 'Gowun Batang',
-    category: '명조',
-  ),
-  AppFontType.gowunDodum: AppFontData(
-    name: '고운 돋움',
-    googleFontName: 'Gowun Dodum',
-    category: '고딕',
+    category: '손글씨',
   ),
   AppFontType.nanumPen: AppFontData(
     name: '나눔 손글씨 펜',
@@ -192,23 +202,50 @@ const fontDataMap = {
     googleFontName: 'Gamja Flower',
     category: '손글씨',
   ),
-  AppFontType.dokdo: AppFontData(
-    name: '독도',
-    googleFontName: 'Dokdo',
-    category: '디스플레이',
-  ),
   AppFontType.singleDay: AppFontData(
     name: '싱글데이',
     googleFontName: 'Single Day',
     category: '손글씨',
   ),
-  AppFontType.eastSeaDokdo: AppFontData(
-    name: '동해독도',
-    googleFontName: 'East Sea Dokdo',
-    category: '디스플레이',
+  AppFontType.hiMelody: AppFontData(
+    name: '하이멜로디',
+    googleFontName: 'Hi Melody',
+    category: '손글씨',
+  ),
+  AppFontType.cuteFont: AppFontData(
+    name: '큐트폰트',
+    googleFontName: 'Cute Font',
+    category: '손글씨',
+  ),
+  AppFontType.yeongdeok: AppFontData(
+    name: '연성',
+    googleFontName: 'Yeon Sung',
+    category: '손글씨',
   ),
 
-  // 깔끔한 고딕
+  // ── 명조 ──
+  AppFontType.notoSerifKr: AppFontData(
+    name: 'Noto Serif KR',
+    googleFontName: 'Noto Serif KR',
+    category: '명조',
+  ),
+  AppFontType.nanumMyeongjo: AppFontData(
+    name: '나눔 명조',
+    googleFontName: 'Nanum Myeongjo',
+    category: '명조',
+  ),
+  AppFontType.songMyung: AppFontData(
+    name: '송명',
+    googleFontName: 'Song Myung',
+    category: '명조',
+  ),
+
+  // ── 고딕 ──
+  AppFontType.gowunDodum: AppFontData(
+    name: '고운 돋움',
+    googleFontName: 'Gowun Dodum',
+    category: '고딕',
+  ),
   AppFontType.gothicA1: AppFontData(
     name: '고딕 A1',
     googleFontName: 'Gothic A1',
@@ -224,25 +261,28 @@ const fontDataMap = {
     googleFontName: 'IBM Plex Sans KR',
     category: '고딕',
   ),
-
-  // 명조
-  AppFontType.notoSerifKr: AppFontData(
-    name: 'Noto Serif KR',
-    googleFontName: 'Noto Serif KR',
-    category: '명조',
-  ),
-  AppFontType.nanumMyeongjo: AppFontData(
-    name: '나눔 명조',
-    googleFontName: 'Nanum Myeongjo',
-    category: '명조',
-  ),
   AppFontType.nanumGothic: AppFontData(
     name: '나눔 고딕',
     googleFontName: 'Nanum Gothic',
     category: '고딕',
   ),
+  AppFontType.sunflower: AppFontData(
+    name: '해바라기',
+    googleFontName: 'Sunflower',
+    category: '고딕',
+  ),
 
-  // 디스플레이 / 개성
+  // ── 디스플레이 / 개성 ──
+  AppFontType.dokdo: AppFontData(
+    name: '독도',
+    googleFontName: 'Dokdo',
+    category: '디스플레이',
+  ),
+  AppFontType.eastSeaDokdo: AppFontData(
+    name: '동해독도',
+    googleFontName: 'East Sea Dokdo',
+    category: '디스플레이',
+  ),
   AppFontType.doHyeon: AppFontData(
     name: '도현',
     googleFontName: 'Do Hyeon',
@@ -258,10 +298,25 @@ const fontDataMap = {
     googleFontName: 'Black Han Sans',
     category: '디스플레이',
   ),
-  AppFontType.sunflower: AppFontData(
-    name: '해바라기',
-    googleFontName: 'Sunflower',
-    category: '고딕',
+  AppFontType.gugi: AppFontData(
+    name: '구기',
+    googleFontName: 'Gugi',
+    category: '디스플레이',
+  ),
+  AppFontType.stylish: AppFontData(
+    name: '스타일리시',
+    googleFontName: 'Stylish',
+    category: '디스플레이',
+  ),
+  AppFontType.yeonSung: AppFontData(
+    name: '연성체',
+    googleFontName: 'Yeon Sung',
+    category: '디스플레이',
+  ),
+  AppFontType.kirangHaerang: AppFontData(
+    name: '기랑해랑',
+    googleFontName: 'Kirang Haerang',
+    category: '디스플레이',
   ),
 };
 

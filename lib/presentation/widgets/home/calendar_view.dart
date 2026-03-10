@@ -49,12 +49,12 @@ class CalendarView extends ConsumerWidget {
     );
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
       child: Column(
         children: [
           _buildHeader(context, ref, focusedMonth, fontData, themeData),
-          const SizedBox(height: 12),
-          _buildWeekdayLabels(themeData),
+          const SizedBox(height: 10),
+          _buildWeekdayLabels(themeData, fontData),
           const SizedBox(height: 4),
           _buildCalendarGrid(
             context,
@@ -84,15 +84,19 @@ class CalendarView extends ConsumerWidget {
                 DateTime(focusedMonth.year, focusedMonth.month - 1, 1);
             ref.read(focusedMonthProvider.notifier).state = prev;
           },
-          child: Padding(
-            padding: const EdgeInsets.all(8),
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: themeData.background,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Icon(Icons.chevron_left_rounded,
-                size: 22, color: themeData.textSecondary),
+                size: 20, color: themeData.textSecondary),
           ),
         ),
         Text(
           title,
-          style: getAppFont(fontData.googleFontName, 17, themeData.textPrimary),
+          style: getAppFont(fontData.googleFontName, 16, themeData.textPrimary),
         ),
         Pressable(
           onTap: () {
@@ -100,31 +104,38 @@ class CalendarView extends ConsumerWidget {
                 DateTime(focusedMonth.year, focusedMonth.month + 1, 1);
             ref.read(focusedMonthProvider.notifier).state = next;
           },
-          child: Padding(
-            padding: const EdgeInsets.all(8),
+          child: Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: themeData.background,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: Icon(Icons.chevron_right_rounded,
-                size: 22, color: themeData.textSecondary),
+                size: 20, color: themeData.textSecondary),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildWeekdayLabels(AppThemeData themeData) {
+  Widget _buildWeekdayLabels(AppThemeData themeData, AppFontData fontData) {
     const days = ['일', '월', '화', '수', '목', '금', '토'];
     return Row(
       children: days.map((d) {
-        final isWeekend = d == '일' || d == '토';
+        final isSun = d == '일';
+        final isSat = d == '토';
         return Expanded(
           child: Center(
             child: Text(
               d,
               style: GoogleFonts.notoSans(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: isWeekend
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: isSun
                     ? AppColors.accentPink.withValues(alpha: 0.7)
-                    : themeData.textSecondary,
+                    : isSat
+                        ? AppColors.accentBlue.withValues(alpha: 0.6)
+                        : themeData.textSecondary.withValues(alpha: 0.6),
               ),
             ),
           ),
@@ -160,7 +171,7 @@ class CalendarView extends ConsumerWidget {
             final dayNum = cellIdx - startWeekday + 1;
 
             if (dayNum < 1 || dayNum > totalDays) {
-              return const Expanded(child: SizedBox(height: 56));
+              return const Expanded(child: SizedBox(height: 50));
             }
 
             final date =
@@ -172,7 +183,8 @@ class CalendarView extends ConsumerWidget {
             final isToday = today.year == date.year &&
                 today.month == date.month &&
                 today.day == date.day;
-            final isWeekend = dayIdx == 0 || dayIdx == 6;
+            final isSun = dayIdx == 0;
+            final isSat = dayIdx == 6;
             final hasEntry = entryDates.any((d) =>
                 d.year == date.year &&
                 d.month == date.month &&
@@ -180,25 +192,29 @@ class CalendarView extends ConsumerWidget {
             final stickers = stickersMap[dateStr] ?? [];
             final schedules = schedulesMap[dateStr] ?? [];
 
+            // Get first schedule emoji for display
+            String? scheduleEmoji;
+            if (schedules.isNotEmpty) {
+              scheduleEmoji = schedules.first['emoji'] as String?;
+            }
+
             return Expanded(
               child: GestureDetector(
                 onTap: () {
                   ref.read(selectedDateProvider.notifier).state = date;
-                  // Show diary/schedule choice
-                  _showDateActionSheet(context, ref, date, themeData, fontData);
+                  _showDateActionDialog(
+                      context, ref, date, themeData, fontData);
                 },
-                onLongPress: () =>
-                    _showCalendarStickerPicker(context, ref, date),
                 child: Container(
-                  height: 56,
-                  margin: const EdgeInsets.all(1),
+                  height: 50,
+                  margin: const EdgeInsets.all(1.5),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? themeData.primary
                         : isToday
-                            ? themeData.primary.withValues(alpha: 0.08)
+                            ? themeData.primary.withValues(alpha: 0.06)
                             : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -211,9 +227,11 @@ class CalendarView extends ConsumerWidget {
                               isToday ? FontWeight.w700 : FontWeight.w400,
                           color: isSelected
                               ? Colors.white
-                              : isWeekend
+                              : isSun
                                   ? AppColors.accentPink
-                                  : themeData.textPrimary,
+                                  : isSat
+                                      ? AppColors.accentBlue
+                                      : themeData.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 1),
@@ -222,6 +240,11 @@ class CalendarView extends ConsumerWidget {
                           stickers.length <= 2
                               ? stickers.join('')
                               : '${stickers[0]}${stickers[1]}',
+                          style: const TextStyle(fontSize: 8, height: 1.0),
+                        )
+                      else if (scheduleEmoji != null && scheduleEmoji != '📅')
+                        Text(
+                          scheduleEmoji,
                           style: const TextStyle(fontSize: 9, height: 1.0),
                         )
                       else
@@ -230,8 +253,8 @@ class CalendarView extends ConsumerWidget {
                           children: [
                             if (hasEntry)
                               Container(
-                                width: 5,
-                                height: 5,
+                                width: 4,
+                                height: 4,
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? Colors.white.withValues(alpha: 0.8)
@@ -243,8 +266,8 @@ class CalendarView extends ConsumerWidget {
                               const SizedBox(width: 2),
                             if (schedules.isNotEmpty)
                               Container(
-                                width: 5,
-                                height: 5,
+                                width: 4,
+                                height: 4,
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? Colors.white.withValues(alpha: 0.8)
@@ -265,119 +288,110 @@ class CalendarView extends ConsumerWidget {
     );
   }
 
-  /// 날짜 클릭 시 일기/일정 선택 바텀시트
-  void _showDateActionSheet(
+  /// 날짜 클릭 시 중앙 다이얼로그 (세련된 디자인)
+  void _showDateActionDialog(
     BuildContext context,
     WidgetRef ref,
     DateTime date,
     AppThemeData themeData,
     AppFontData fontData,
   ) {
-    final dayStr = DateFormat('M월 d일', 'ko_KR').format(date);
+    final dayStr = DateFormat('M월 d일 EEEE', 'ko_KR').format(date);
 
-    showModalBottomSheet(
+    showGeneralDialog(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (_) => Container(
-        margin: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: themeData.surface,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              dayStr,
-              style: getAppFont(fontData.googleFontName, 18, themeData.textPrimary),
-            ),
-            const SizedBox(height: 20),
-            // 일기 쓰기
-            Pressable(
-              onTap: () {
-                Navigator.pop(context);
-                onDateSelected(date);
-              },
-              child: Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.accentPink.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  children: [
-                    const Text('📝', style: TextStyle(fontSize: 22)),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '일기 쓰기',
-                          style: getAppFont(fontData.googleFontName, 15,
-                              themeData.textPrimary),
-                        ),
-                        Text(
-                          '오늘 하루를 꾸며보세요',
-                          style: getAppFont(fontData.googleFontName, 11,
-                              themeData.textSecondary),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    Icon(Icons.chevron_right_rounded,
-                        color: themeData.textSecondary, size: 20),
-                  ],
-                ),
+      barrierDismissible: true,
+      barrierLabel: 'dismiss',
+      barrierColor: Colors.black.withValues(alpha: 0.3),
+      transitionDuration: const Duration(milliseconds: 250),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+        );
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.9, end: 1.0).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: curvedAnimation,
+            child: child,
+          ),
+        );
+      },
+      pageBuilder: (context, animation, secondaryAnimation) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.82,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+              decoration: BoxDecoration(
+                color: themeData.surface,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.12),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Date header
+                  Text(
+                    dayStr,
+                    style: getAppFont(
+                        fontData.googleFontName, 17, themeData.textPrimary),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Options
+                  _ActionOption(
+                    emoji: '📝',
+                    title: '일기 쓰기',
+                    subtitle: '오늘 하루를 꾸며보세요',
+                    color: AppColors.accentPink,
+                    themeData: themeData,
+                    fontData: fontData,
+                    onTap: () {
+                      Navigator.pop(context);
+                      onDateSelected(date);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _ActionOption(
+                    emoji: '📅',
+                    title: '일정 관리',
+                    subtitle: '할 일과 약속을 기록해요',
+                    color: AppColors.accentBlue,
+                    themeData: themeData,
+                    fontData: fontData,
+                    onTap: () {
+                      Navigator.pop(context);
+                      onScheduleSelected?.call(date);
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _ActionOption(
+                    emoji: '🎀',
+                    title: '스티커 붙이기',
+                    subtitle: '달력에 귀여운 스티커를 꾸며요',
+                    color: Colors.amber,
+                    themeData: themeData,
+                    fontData: fontData,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showCalendarStickerPicker(
+                          context, ref, date, themeData, fontData);
+                    },
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 10),
-            // 일정 쓰기
-            Pressable(
-              onTap: () {
-                Navigator.pop(context);
-                onScheduleSelected?.call(date);
-              },
-              child: Container(
-                width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: AppColors.accentBlue.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  children: [
-                    const Text('📅', style: TextStyle(fontSize: 22)),
-                    const SizedBox(width: 12),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '일정 관리',
-                          style: getAppFont(fontData.googleFontName, 15,
-                              themeData.textPrimary),
-                        ),
-                        Text(
-                          '할 일과 약속을 기록해요',
-                          style: getAppFont(fontData.googleFontName, 11,
-                              themeData.textSecondary),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    Icon(Icons.chevron_right_rounded,
-                        color: themeData.textSecondary, size: 20),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -385,6 +399,8 @@ class CalendarView extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     DateTime date,
+    AppThemeData themeData,
+    AppFontData fontData,
   ) {
     final dateStr = DateFormat('yyyy-MM-dd').format(date);
     final dayStr = DateFormat('M월 d일', 'ko_KR').format(date);
@@ -392,31 +408,29 @@ class CalendarView extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (_) => Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        height: MediaQuery.of(context).size.height * 0.5,
+        decoration: BoxDecoration(
+          color: themeData.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
           children: [
             const SizedBox(height: 12),
             Container(
-              width: 40,
+              width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: AppColors.divider,
+                color: themeData.divider,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             Text(
               '$dayStr 스티커',
-              style: GoogleFonts.notoSans(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
-              ),
+              style: getAppFont(
+                  fontData.googleFontName, 16, themeData.textPrimary),
             ),
             const SizedBox(height: 4),
             Pressable(
@@ -428,15 +442,12 @@ class CalendarView extends ConsumerWidget {
               },
               child: Text(
                 '스티커 지우기',
-                style: GoogleFonts.notoSans(
-                  fontSize: 12,
-                  color: AppColors.accent,
-                ),
+                style: getAppFont(
+                    fontData.googleFontName, 12, AppColors.accent),
               ),
             ),
             const SizedBox(height: 8),
-            SizedBox(
-              height: 280,
+            Expanded(
               child: StickerPicker(
                 onStickerSelected: (emoji) async {
                   final db = ref.read(localDatabaseProvider);
@@ -450,6 +461,83 @@ class CalendarView extends ConsumerWidget {
                 },
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 세련된 액션 옵션 위젯
+class _ActionOption extends StatelessWidget {
+  final String emoji;
+  final String title;
+  final String subtitle;
+  final Color color;
+  final AppThemeData themeData;
+  final AppFontData fontData;
+  final VoidCallback onTap;
+
+  const _ActionOption({
+    required this.emoji,
+    required this.title,
+    required this.subtitle,
+    required this.color,
+    required this.themeData,
+    required this.fontData,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Pressable(
+      onTap: onTap,
+      scaleFactor: 0.97,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: color.withValues(alpha: 0.1),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Center(
+                child: Text(emoji, style: const TextStyle(fontSize: 20)),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: getAppFont(fontData.googleFontName, 15,
+                        themeData.textPrimary),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    subtitle,
+                    style: getAppFont(fontData.googleFontName, 11,
+                        themeData.textSecondary),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios_rounded,
+                size: 14, color: themeData.textSecondary.withValues(alpha: 0.4)),
           ],
         ),
       ),
