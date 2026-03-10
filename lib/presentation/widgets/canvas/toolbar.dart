@@ -26,47 +26,44 @@ class CanvasToolbar extends ConsumerWidget {
     final drawingColor = ref.watch(drawingColorProvider);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.toolbarBg,
+        color: AppColors.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 4,
-            offset: const Offset(0, -2),
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, -3),
           ),
         ],
       ),
-      child: SafeArea(
-        top: false,
-        child: isDrawing
-            ? _buildDrawingToolbar(context, ref, drawingColor)
-            : _buildMainToolbar(context),
-      ),
+      child: isDrawing
+          ? _buildDrawingToolbar(context, ref, drawingColor)
+          : _buildMainToolbar(),
     );
   }
 
-  Widget _buildMainToolbar(BuildContext context) {
+  Widget _buildMainToolbar() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         _ToolbarButton(
-          icon: Icons.text_fields,
+          icon: Icons.text_fields_rounded,
           label: '텍스트',
           onTap: onAddText,
         ),
         _ToolbarButton(
-          icon: Icons.photo_library,
+          icon: Icons.photo_library_rounded,
           label: '사진',
           onTap: onAddPhoto,
         ),
         _ToolbarButton(
-          icon: Icons.emoji_emotions,
+          icon: Icons.emoji_emotions_rounded,
           label: '스티커',
           onTap: onAddSticker,
         ),
         _ToolbarButton(
-          icon: Icons.brush,
+          icon: Icons.brush_rounded,
           label: '그리기',
           onTap: onToggleDrawing,
         ),
@@ -85,45 +82,58 @@ class CanvasToolbar extends ConsumerWidget {
       children: [
         Pressable(
           onTap: onToggleDrawing,
-          child: const Padding(
-            padding: EdgeInsets.all(8),
-            child: Icon(Icons.close, color: AppColors.textPrimary, size: 22),
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.background,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.close_rounded,
+                color: AppColors.textPrimary, size: 20),
           ),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 12),
 
-        // Color picker
+        // Color picker button
         Pressable(
           onTap: () => _showColorPicker(context, ref, currentColor),
           child: Container(
-            width: 32,
-            height: 32,
+            width: 30,
+            height: 30,
             decoration: BoxDecoration(
               color: currentColor,
               shape: BoxShape.circle,
               border: Border.all(color: AppColors.divider, width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: currentColor.withValues(alpha: 0.3),
+                  blurRadius: 6,
+                ),
+              ],
             ),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
 
         // Quick colors
         ...[Colors.black, Colors.red, Colors.blue, Colors.green].map(
           (color) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 3),
             child: Pressable(
               onTap: () =>
                   ref.read(drawingColorProvider.notifier).state = color,
               scaleFactor: 0.8,
               child: Container(
-                width: 24,
-                height: 24,
+                width: 22,
+                height: 22,
                 decoration: BoxDecoration(
                   color: color,
                   shape: BoxShape.circle,
                   border: currentColor == color
-                      ? Border.all(color: AppColors.selectedElement, width: 2)
-                      : null,
+                      ? Border.all(color: AppColors.accentBlue, width: 2.5)
+                      : Border.all(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          width: 1),
                 ),
               ),
             ),
@@ -134,14 +144,23 @@ class CanvasToolbar extends ConsumerWidget {
 
         // Stroke width
         SizedBox(
-          width: 100,
-          child: Slider(
-            value: strokeWidth,
-            min: 1.0,
-            max: 10.0,
-            activeColor: AppColors.primary,
-            onChanged: (v) =>
-                ref.read(drawingStrokeWidthProvider.notifier).state = v,
+          width: 90,
+          child: SliderTheme(
+            data: SliderThemeData(
+              trackHeight: 3,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
+              activeTrackColor: AppColors.textPrimary,
+              inactiveTrackColor: AppColors.divider,
+              thumbColor: AppColors.textPrimary,
+              overlayColor: AppColors.textPrimary.withValues(alpha: 0.1),
+            ),
+            child: Slider(
+              value: strokeWidth,
+              min: 1.0,
+              max: 10.0,
+              onChanged: (v) =>
+                  ref.read(drawingStrokeWidthProvider.notifier).state = v,
+            ),
           ),
         ),
       ],
@@ -158,8 +177,10 @@ class CanvasToolbar extends ConsumerWidget {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title:
-              Text('색상 선택', style: GoogleFonts.nanumPenScript(fontSize: 22)),
+              Text('색상 선택', style: GoogleFonts.notoSans(fontSize: 18, fontWeight: FontWeight.w600)),
           content: SingleChildScrollView(
             child: ColorPicker(
               pickerColor: currentColor,
@@ -168,12 +189,21 @@ class CanvasToolbar extends ConsumerWidget {
           ),
           actions: [
             TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text('취소',
+                  style: GoogleFonts.notoSans(
+                      fontSize: 14, color: AppColors.textSecondary)),
+            ),
+            TextButton(
               onPressed: () {
                 ref.read(drawingColorProvider.notifier).state = pickedColor;
                 Navigator.pop(dialogContext);
               },
               child: Text('확인',
-                  style: GoogleFonts.nanumPenScript(fontSize: 18)),
+                  style: GoogleFonts.notoSans(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary)),
             ),
           ],
         );
@@ -201,22 +231,17 @@ class _ToolbarButtonState extends State<_ToolbarButton>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnim;
-  late Animation<Color?> _colorAnim;
 
   @override
   void initState() {
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 120),
+      duration: const Duration(milliseconds: 100),
     );
-    _scaleAnim = Tween<double>(begin: 1.0, end: 0.9).animate(
+    _scaleAnim = Tween<double>(begin: 1.0, end: 0.88).animate(
       CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
     );
-    _colorAnim = ColorTween(
-      begin: AppColors.textPrimary,
-      end: AppColors.primary,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -239,19 +264,30 @@ class _ToolbarButtonState extends State<_ToolbarButton>
         builder: (context, child) {
           return Transform.scale(
             scale: _scaleAnim.value,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(widget.icon, color: _colorAnim.value, size: 24),
-                const SizedBox(height: 4),
-                Text(
-                  widget.label,
-                  style: GoogleFonts.nanumPenScript(
-                    fontSize: 14,
-                    color: _colorAnim.value?.withValues(alpha: 0.7),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: _controller.isAnimating || _controller.value > 0
+                    ? AppColors.background
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(widget.icon,
+                      color: AppColors.textPrimary, size: 22),
+                  const SizedBox(height: 3),
+                  Text(
+                    widget.label,
+                    style: GoogleFonts.notoSans(
+                      fontSize: 11,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

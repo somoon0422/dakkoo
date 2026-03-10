@@ -21,7 +21,12 @@ class DakkooApp extends ConsumerWidget {
   }
 
   ThemeData _buildTheme(AppThemeData themeData, AppFontData fontData) {
-    final textTheme = _getFontTextTheme(fontData.googleFontName, themeData);
+    final textTheme = TextTheme(
+      headlineLarge: _getFont(fontData.googleFontName, 32, themeData.textPrimary),
+      headlineMedium: _getFont(fontData.googleFontName, 28, themeData.textPrimary),
+      bodyLarge: _getFont(fontData.googleFontName, 20, themeData.textPrimary),
+      bodyMedium: _getFont(fontData.googleFontName, 18, themeData.textSecondary),
+    );
 
     return ThemeData(
       useMaterial3: true,
@@ -62,33 +67,75 @@ class DakkooApp extends ConsumerWidget {
     );
   }
 
-  TextTheme _getFontTextTheme(String fontName, AppThemeData themeData) {
-    return TextTheme(
-      headlineLarge: _getFont(fontName, 32, themeData.textPrimary),
-      headlineMedium: _getFont(fontName, 28, themeData.textPrimary),
-      bodyLarge: _getFont(fontName, 20, themeData.textPrimary),
-      bodyMedium: _getFont(fontName, 18, themeData.textSecondary),
-    );
-  }
-
-  TextStyle _getFont(String fontName, double size, Color color) {
+  static TextStyle _getFont(String fontName, double size, Color color,
+      {double? height}) {
     switch (fontName) {
+      case 'Gowun Batang':
+        return GoogleFonts.gowunBatang(
+            fontSize: size, color: color, height: height);
+      case 'Gowun Dodum':
+        return GoogleFonts.gowunDodum(
+            fontSize: size, color: color, height: height);
+      case 'Nanum Pen Script':
+        return GoogleFonts.nanumPenScript(
+            fontSize: size, color: color, height: height);
+      case 'Nanum Brush Script':
+        return GoogleFonts.nanumBrushScript(
+            fontSize: size, color: color, height: height);
       case 'Gaegu':
-        return GoogleFonts.gaegu(fontSize: size, color: color);
+        return GoogleFonts.gaegu(fontSize: size, color: color, height: height);
       case 'Poor Story':
-        return GoogleFonts.poorStory(fontSize: size, color: color);
+        return GoogleFonts.poorStory(
+            fontSize: size, color: color, height: height);
       case 'Gamja Flower':
-        return GoogleFonts.gamjaFlower(fontSize: size, color: color);
+        return GoogleFonts.gamjaFlower(
+            fontSize: size, color: color, height: height);
       case 'Dokdo':
-        return GoogleFonts.dokdo(fontSize: size, color: color);
+        return GoogleFonts.dokdo(fontSize: size, color: color, height: height);
       case 'Single Day':
-        return GoogleFonts.singleDay(fontSize: size, color: color);
+        return GoogleFonts.singleDay(
+            fontSize: size, color: color, height: height);
       case 'East Sea Dokdo':
-        return GoogleFonts.eastSeaDokdo(fontSize: size, color: color);
+        return GoogleFonts.eastSeaDokdo(
+            fontSize: size, color: color, height: height);
       case 'Gothic A1':
-        return GoogleFonts.gothicA1(fontSize: size, color: color);
+        return GoogleFonts.gothicA1(
+            fontSize: size, color: color, height: height);
+      case 'Noto Sans KR':
+        return GoogleFonts.notoSans(
+            fontSize: size, color: color, height: height);
+      case 'Noto Serif KR':
+        return GoogleFonts.notoSerif(
+            fontSize: size, color: color, height: height);
+      case 'IBM Plex Sans KR':
+        return GoogleFonts.ibmPlexSansKr(
+            fontSize: size, color: color, height: height);
+      case 'Nanum Myeongjo':
+        return GoogleFonts.nanumMyeongjo(
+            fontSize: size, color: color, height: height);
+      case 'Nanum Gothic':
+        return GoogleFonts.nanumGothic(
+            fontSize: size, color: color, height: height);
+      case 'Do Hyeon':
+        return GoogleFonts.doHyeon(
+            fontSize: size, color: color, height: height);
+      case 'Jua':
+        return GoogleFonts.jua(fontSize: size, color: color, height: height);
+      case 'Black Han Sans':
+        return GoogleFonts.blackHanSans(
+            fontSize: size, color: color, height: height);
+      case 'Sunflower':
+        return GoogleFonts.sunflower(
+            fontSize: size, color: color, height: height);
       default:
-        return GoogleFonts.nanumPenScript(fontSize: size, color: color);
+        return GoogleFonts.gowunBatang(
+            fontSize: size, color: color, height: height);
     }
   }
+}
+
+/// Utility to get font style by google font name — used across the app
+TextStyle getAppFont(String fontName, double size, Color color,
+    {double? height, FontWeight? fontWeight}) {
+  return DakkooApp._getFont(fontName, size, color, height: height);
 }

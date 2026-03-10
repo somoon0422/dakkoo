@@ -66,152 +66,244 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
   @override
   Widget build(BuildContext context) {
     final page = ref.watch(currentPageProvider) ?? widget.page;
-    final dateStr = DateFormat('M월 d일 (E)', 'ko_KR').format(_currentDate);
+    final dayStr = DateFormat('d', 'ko_KR').format(_currentDate);
+    final monthStr = DateFormat('M월', 'ko_KR').format(_currentDate);
+    final weekdayStr = DateFormat('EEEE', 'ko_KR').format(_currentDate);
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.toolbarBg,
-        elevation: 1,
-        leading: Pressable(
-          onTap: () {
-            ref.invalidate(datesWithEntriesProvider);
-            ref.invalidate(allPagesProvider);
-            Navigator.of(context).pop();
-          },
-          child: const Icon(Icons.arrow_back_ios, size: 20),
-        ),
-        title: Pressable(
-          onTap: () => _showDatePicker(context),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                dateStr,
-                style: GoogleFonts.nanumPenScript(
-                  fontSize: 24,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-              const SizedBox(width: 4),
-              const Icon(Icons.arrow_drop_down,
-                  size: 20, color: AppColors.textSecondary),
-            ],
-          ),
-        ),
-        actions: [
-          // Background picker
-          PopupMenuButton<BackgroundType>(
-            icon: const Icon(Icons.wallpaper, size: 22),
-            onSelected: (bg) async {
-              final updated = page.copyWith(
-                backgroundType: bg,
-                updatedAt: DateTime.now(),
-              );
-              ref.read(currentPageProvider.notifier).state = updated;
-              await ref.read(diaryRepositoryProvider).updatePage(updated);
-            },
-            itemBuilder: (_) => [
-              PopupMenuItem(
-                value: BackgroundType.notePaper,
-                child: Text('노트 종이',
-                    style: GoogleFonts.nanumPenScript(fontSize: 18)),
-              ),
-              PopupMenuItem(
-                value: BackgroundType.kraftPaper,
-                child: Text('크래프트 종이',
-                    style: GoogleFonts.nanumPenScript(fontSize: 18)),
-              ),
-              PopupMenuItem(
-                value: BackgroundType.vintagePaper,
-                child: Text('빈티지 종이',
-                    style: GoogleFonts.nanumPenScript(fontSize: 18)),
-              ),
-              PopupMenuItem(
-                value: BackgroundType.blank,
-                child: Text('빈 종이',
-                    style: GoogleFonts.nanumPenScript(fontSize: 18)),
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Page navigation arrows + swipe
-          Expanded(
-            child: Stack(
-              children: [
-                PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: (index) async {
-                    final newDate = _dateForIndex(index);
-                    await _navigateToDate(newDate);
-                  },
-                  itemBuilder: (context, index) {
-                    return DiaryCanvas(
-                      page: page,
-                      onTapImageArea: () => _addPhoto(),
-                    );
-                  },
-                ),
-                // Left arrow
-                Positioned(
-                  left: 4,
-                  top: 0,
-                  bottom: 0,
-                  child: Center(
-                    child: Pressable(
-                      onTap: () => _goToPreviousDay(),
-                      scaleFactor: 0.85,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.chevron_left,
-                          color: AppColors.textSecondary,
-                          size: 24,
-                        ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Custom top bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                children: [
+                  // Back button
+                  Pressable(
+                    onTap: () {
+                      ref.invalidate(datesWithEntriesProvider);
+                      ref.invalidate(allPagesProvider);
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded,
+                          size: 18, color: AppColors.textPrimary),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Date display
+                  Pressable(
+                    onTap: () => _showDatePicker(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '$monthStr $dayStr일',
+                            style: GoogleFonts.gowunBatang(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            weekdayStr,
+                            style: GoogleFonts.notoSans(
+                              fontSize: 12,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.keyboard_arrow_down_rounded,
+                              size: 18, color: AppColors.textSecondary),
+                        ],
                       ),
                     ),
                   ),
-                ),
-                // Right arrow
-                Positioned(
-                  right: 4,
-                  top: 0,
-                  bottom: 0,
-                  child: Center(
-                    child: Pressable(
-                      onTap: () => _goToNextDay(),
-                      scaleFactor: 0.85,
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.7),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.chevron_right,
-                          color: AppColors.textSecondary,
-                          size: 24,
-                        ),
+
+                  const Spacer(),
+
+                  // Background picker
+                  PopupMenuButton<BackgroundType>(
+                    offset: const Offset(0, 40),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
+                      child: const Icon(Icons.palette_outlined,
+                          size: 18, color: AppColors.textPrimary),
                     ),
+                    onSelected: (bg) async {
+                      final updated = page.copyWith(
+                        backgroundType: bg,
+                        updatedAt: DateTime.now(),
+                      );
+                      ref.read(currentPageProvider.notifier).state = updated;
+                      await ref
+                          .read(diaryRepositoryProvider)
+                          .updatePage(updated);
+                    },
+                    itemBuilder: (_) => [
+                      _buildPopupItem(
+                          BackgroundType.notePaper, '노트 종이', Icons.note_alt_outlined),
+                      _buildPopupItem(BackgroundType.kraftPaper, '크래프트 종이',
+                          Icons.texture_rounded),
+                      _buildPopupItem(BackgroundType.vintagePaper, '빈티지 종이',
+                          Icons.auto_awesome_outlined),
+                      _buildPopupItem(
+                          BackgroundType.blank, '빈 종이', Icons.crop_square_rounded),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          CanvasToolbar(
-            onAddText: () => _addText(),
-            onAddPhoto: () => _addPhoto(),
-            onAddSticker: () => _showStickerPicker(),
-            onToggleDrawing: () => _toggleDrawing(),
-          ),
+
+            // Page content
+            Expanded(
+              child: Stack(
+                children: [
+                  PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (index) async {
+                      final newDate = _dateForIndex(index);
+                      await _navigateToDate(newDate);
+                    },
+                    itemBuilder: (context, index) {
+                      return DiaryCanvas(
+                        page: page,
+                        onTapImageArea: () => _addPhoto(),
+                      );
+                    },
+                  ),
+                  // Left arrow
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: Pressable(
+                        onTap: () => _goToPreviousDay(),
+                        scaleFactor: 0.85,
+                        child: Container(
+                          margin: const EdgeInsets.only(left: 4),
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface.withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.06),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.chevron_left_rounded,
+                            color: AppColors.textSecondary,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Right arrow
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: Pressable(
+                        onTap: () => _goToNextDay(),
+                        scaleFactor: 0.85,
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 4),
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: AppColors.surface.withValues(alpha: 0.9),
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.06),
+                                blurRadius: 8,
+                              ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.chevron_right_rounded,
+                            color: AppColors.textSecondary,
+                            size: 22,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Toolbar
+            CanvasToolbar(
+              onAddText: () => _addText(),
+              onAddPhoto: () => _addPhoto(),
+              onAddSticker: () => _showStickerPicker(),
+              onToggleDrawing: () => _toggleDrawing(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  PopupMenuItem<BackgroundType> _buildPopupItem(
+      BackgroundType value, String label, IconData icon) {
+    return PopupMenuItem(
+      value: value,
+      child: Row(
+        children: [
+          Icon(icon, size: 18, color: AppColors.textSecondary),
+          const SizedBox(width: 10),
+          Text(label, style: GoogleFonts.notoSans(fontSize: 14)),
         ],
       ),
     );
@@ -295,20 +387,23 @@ class _DiaryCanvasScreenState extends ConsumerState<DiaryCanvasScreen> {
   void _showStickerPicker() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (_) => StickerPicker(
-        onStickerSelected: (emoji) {
-          Navigator.pop(context);
-          final page = ref.read(currentPageProvider);
-          if (page != null) {
-            ref
-                .read(pageElementsProvider.notifier)
-                .addStickerElement(page.id, emoji);
-          }
-        },
+      backgroundColor: Colors.transparent,
+      builder: (_) => Container(
+        decoration: const BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: StickerPicker(
+          onStickerSelected: (emoji) {
+            Navigator.pop(context);
+            final page = ref.read(currentPageProvider);
+            if (page != null) {
+              ref
+                  .read(pageElementsProvider.notifier)
+                  .addStickerElement(page.id, emoji);
+            }
+          },
+        ),
       ),
     );
   }

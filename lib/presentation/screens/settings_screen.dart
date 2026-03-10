@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../app.dart';
 import '../providers/theme_providers.dart';
 import '../widgets/common/pressable.dart';
 
@@ -16,65 +17,104 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: themeData.background,
-      appBar: AppBar(
-        backgroundColor: themeData.toolbarBg,
-        elevation: 1,
-        leading: Pressable(
-          onTap: () => Navigator.pop(context),
-          child: Icon(Icons.arrow_back_ios,
-              size: 20, color: themeData.textPrimary),
-        ),
-        title: Text(
-          '설정',
-          style: _getFont(fontData.googleFontName, 24, themeData.textPrimary),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 테마 선택
-            Text(
-              '테마',
-              style: _getFont(
-                  fontData.googleFontName, 22, themeData.textPrimary),
+            // Top bar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Pressable(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: themeData.surface,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(Icons.arrow_back_ios_new_rounded,
+                          size: 18, color: themeData.textPrimary),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Text(
+                    '설정',
+                    style: GoogleFonts.notoSans(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: themeData.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            _buildThemeGrid(ref, currentTheme, themeData, fontData),
-            const SizedBox(height: 32),
 
-            // 폰트 선택
-            Text(
-              '폰트',
-              style: _getFont(
-                  fontData.googleFontName, 22, themeData.textPrimary),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 8),
+
+                    // 테마 선택
+                    _sectionTitle('테마', themeData),
+                    const SizedBox(height: 12),
+                    _buildThemeGrid(ref, currentTheme, themeData),
+                    const SizedBox(height: 32),
+
+                    // 폰트 선택
+                    _sectionTitle('폰트', themeData),
+                    const SizedBox(height: 12),
+                    _buildFontList(ref, currentFont, themeData),
+
+                    const SizedBox(height: 32),
+
+                    // 미리보기
+                    _sectionTitle('미리보기', themeData),
+                    const SizedBox(height: 12),
+                    _buildPreview(themeData, fontData),
+
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
-            _buildFontList(ref, currentFont, themeData, fontData),
-
-            const SizedBox(height: 32),
-
-            // 미리보기
-            Text(
-              '미리보기',
-              style: _getFont(
-                  fontData.googleFontName, 22, themeData.textPrimary),
-            ),
-            const SizedBox(height: 12),
-            _buildPreview(themeData, fontData),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildThemeGrid(WidgetRef ref, AppThemeType currentTheme,
-      AppThemeData themeData, AppFontData fontData) {
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
+  Widget _sectionTitle(String title, AppThemeData themeData) {
+    return Text(
+      title,
+      style: GoogleFonts.notoSans(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: themeData.textPrimary,
+        letterSpacing: -0.3,
+      ),
+    );
+  }
+
+  Widget _buildThemeGrid(
+      WidgetRef ref, AppThemeType currentTheme, AppThemeData themeData) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 3,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 1.1,
       children: AppThemeType.values.map((type) {
         final data = themeDataMap[type]!;
         final isSelected = type == currentTheme;
@@ -82,11 +122,10 @@ class SettingsScreen extends ConsumerWidget {
         return Pressable(
           onTap: () => ref.read(appThemeTypeProvider.notifier).state = type,
           child: Container(
-            width: 100,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: data.surface,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: isSelected ? data.primary : data.divider,
                 width: isSelected ? 2.5 : 1,
@@ -94,34 +133,37 @@ class SettingsScreen extends ConsumerWidget {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: data.primary.withValues(alpha: 0.3),
-                        blurRadius: 8,
+                        color: data.primary.withValues(alpha: 0.25),
+                        blurRadius: 10,
                       )
                     ]
                   : null,
             ),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Color dots
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _colorDot(data.primary, 16),
+                    _colorDot(data.primary, 14),
                     const SizedBox(width: 4),
-                    _colorDot(data.background, 16),
+                    _colorDot(data.background, 14),
                     const SizedBox(width: 4),
-                    _colorDot(data.accent, 16),
+                    _colorDot(data.accent, 14),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Text(
                   data.name,
-                  style: _getFont(
-                    fontData.googleFontName,
-                    14,
-                    isSelected ? data.primary : themeData.textSecondary,
+                  style: GoogleFonts.notoSans(
+                    fontSize: 12,
+                    fontWeight:
+                        isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected ? data.primary : themeData.textSecondary,
                   ),
                   textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -139,56 +181,93 @@ class SettingsScreen extends ConsumerWidget {
         color: color,
         shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.black.withValues(alpha: 0.1),
+          color: Colors.black.withValues(alpha: 0.08),
           width: 0.5,
         ),
       ),
     );
   }
 
-  Widget _buildFontList(WidgetRef ref, AppFontType currentFont,
-      AppThemeData themeData, AppFontData currentFontData) {
-    return Column(
-      children: AppFontType.values.map((type) {
-        final data = fontDataMap[type]!;
-        final isSelected = type == currentFont;
+  Widget _buildFontList(
+      WidgetRef ref, AppFontType currentFont, AppThemeData themeData) {
+    // Group fonts by category
+    final categories = ['손글씨', '명조', '고딕', '디스플레이'];
+    final grouped = <String, List<MapEntry<AppFontType, AppFontData>>>{};
+    for (final cat in categories) {
+      grouped[cat] = fontDataMap.entries
+          .where((e) => e.value.category == cat)
+          .toList();
+    }
 
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: Pressable(
-            onTap: () => ref.read(appFontTypeProvider.notifier).state = type,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? themeData.primary.withValues(alpha: 0.1)
-                    : themeData.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: isSelected ? themeData.primary : themeData.divider,
-                  width: isSelected ? 2 : 1,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: categories.where((cat) => grouped[cat]!.isNotEmpty).map((cat) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8, top: 4),
+              child: Text(
+                cat,
+                style: GoogleFonts.notoSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: themeData.textSecondary,
+                  letterSpacing: 1,
                 ),
               ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      '${data.name} - 오늘의 일기',
-                      style: _getFont(
-                        data.googleFontName,
-                        20,
-                        themeData.textPrimary,
+            ),
+            ...grouped[cat]!.map((entry) {
+              final type = entry.key;
+              final data = entry.value;
+              final isSelected = type == currentFont;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Pressable(
+                  onTap: () =>
+                      ref.read(appFontTypeProvider.notifier).state = type,
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? themeData.primary.withValues(alpha: 0.08)
+                          : themeData.surface,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: isSelected
+                            ? themeData.primary
+                            : themeData.divider,
+                        width: isSelected ? 1.5 : 0.5,
                       ),
                     ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${data.name} — 오늘의 일기',
+                            style: getAppFont(
+                              data.googleFontName,
+                              18,
+                              themeData.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isSelected)
+                          Icon(Icons.check_circle_rounded,
+                              color: themeData.primary, size: 20),
+                      ],
+                    ),
                   ),
-                  if (isSelected)
-                    Icon(Icons.check_circle,
-                        color: themeData.primary, size: 22),
-                ],
-              ),
-            ),
-          ),
+                ),
+              );
+            }),
+            const SizedBox(height: 8),
+          ],
         );
       }).toList(),
     );
@@ -201,67 +280,41 @@ class SettingsScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: themeData.notePaper,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: themeData.divider),
+        border: Border.all(color: themeData.divider, width: 0.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '2026년 3월의 어느 날',
-            style: _getFont(fontData.googleFontName, 24, themeData.textPrimary),
+            style: getAppFont(fontData.googleFontName, 22, themeData.textPrimary),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Container(
-            height: 80,
+            height: 70,
             width: double.infinity,
             decoration: BoxDecoration(
               color: themeData.divider.withValues(alpha: 0.3),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.image, size: 32, color: themeData.textSecondary),
+            child: Icon(Icons.image_rounded,
+                size: 28, color: themeData.textSecondary),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           Text(
             '오늘 하루도 소중한 추억을 기록합니다.\n작은 행복들이 모여 큰 이야기가 되는 나의 다꾸.',
-            style: _getFont(
-                fontData.googleFontName, 18, themeData.textPrimary,
+            style: getAppFont(fontData.googleFontName, 16, themeData.textPrimary,
                 height: 1.8),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '😊 ✨ 🌸',
-            style: const TextStyle(fontSize: 20),
           ),
         ],
       ),
     );
-  }
-
-  TextStyle _getFont(String fontName, double size, Color color,
-      {double? height}) {
-    switch (fontName) {
-      case 'Gaegu':
-        return GoogleFonts.gaegu(fontSize: size, color: color, height: height);
-      case 'Poor Story':
-        return GoogleFonts.poorStory(
-            fontSize: size, color: color, height: height);
-      case 'Gamja Flower':
-        return GoogleFonts.gamjaFlower(
-            fontSize: size, color: color, height: height);
-      case 'Dokdo':
-        return GoogleFonts.dokdo(fontSize: size, color: color, height: height);
-      case 'Single Day':
-        return GoogleFonts.singleDay(
-            fontSize: size, color: color, height: height);
-      case 'East Sea Dokdo':
-        return GoogleFonts.eastSeaDokdo(
-            fontSize: size, color: color, height: height);
-      case 'Gothic A1':
-        return GoogleFonts.gothicA1(
-            fontSize: size, color: color, height: height);
-      default:
-        return GoogleFonts.nanumPenScript(
-            fontSize: size, color: color, height: height);
-    }
   }
 }

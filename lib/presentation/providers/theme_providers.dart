@@ -13,7 +13,11 @@ enum AppThemeType {
 
 /// 앱 폰트 종류
 enum AppFontType {
+  gowunBatang, // 고운 바탕
+  gowunDodum, // 고운 돋움
   nanumPen, // 나눔 손글씨 펜
+  nanumGothic, // 나눔 고딕
+  nanumMyeongjo, // 나눔 명조
   gaegu, // 개구
   poorStory, // 푸어스토리
   gamja, // 감자꽃마을
@@ -21,6 +25,14 @@ enum AppFontType {
   singleDay, // 싱글데이
   eastSeaDokdo, // 동해독도
   gothicA1, // 고딕 A1
+  doHyeon, // 도현
+  jua, // 주아
+  blackHanSans, // 블랙한산스
+  sunflower, // 해바라기
+  notoSansKr, // Noto Sans KR
+  notoSerifKr, // Noto Serif KR
+  ibmPlexSansKr, // IBM Plex Sans KR
+  nanumBrush, // 나눔 붓글씨
 }
 
 /// 테마 데이터
@@ -56,10 +68,12 @@ class AppThemeData {
 class AppFontData {
   final String name;
   final String googleFontName;
+  final String category; // 손글씨, 고딕, 명조, 디스플레이
 
   const AppFontData({
     required this.name,
     required this.googleFontName,
+    required this.category,
   });
 }
 
@@ -140,39 +154,114 @@ const themeDataMap = {
   ),
 };
 
-// 폰트 목록
+// 폰트 목록 — 카테고리별 정리
 const fontDataMap = {
+  // 감성 / 손글씨
+  AppFontType.gowunBatang: AppFontData(
+    name: '고운 바탕',
+    googleFontName: 'Gowun Batang',
+    category: '명조',
+  ),
+  AppFontType.gowunDodum: AppFontData(
+    name: '고운 돋움',
+    googleFontName: 'Gowun Dodum',
+    category: '고딕',
+  ),
   AppFontType.nanumPen: AppFontData(
     name: '나눔 손글씨 펜',
     googleFontName: 'Nanum Pen Script',
+    category: '손글씨',
+  ),
+  AppFontType.nanumBrush: AppFontData(
+    name: '나눔 붓글씨',
+    googleFontName: 'Nanum Brush Script',
+    category: '손글씨',
   ),
   AppFontType.gaegu: AppFontData(
     name: '개구',
     googleFontName: 'Gaegu',
+    category: '손글씨',
   ),
   AppFontType.poorStory: AppFontData(
     name: '푸어스토리',
     googleFontName: 'Poor Story',
+    category: '손글씨',
   ),
   AppFontType.gamja: AppFontData(
     name: '감자꽃마을',
     googleFontName: 'Gamja Flower',
+    category: '손글씨',
   ),
   AppFontType.dokdo: AppFontData(
     name: '독도',
     googleFontName: 'Dokdo',
+    category: '디스플레이',
   ),
   AppFontType.singleDay: AppFontData(
     name: '싱글데이',
     googleFontName: 'Single Day',
+    category: '손글씨',
   ),
   AppFontType.eastSeaDokdo: AppFontData(
     name: '동해독도',
     googleFontName: 'East Sea Dokdo',
+    category: '디스플레이',
   ),
+
+  // 깔끔한 고딕
   AppFontType.gothicA1: AppFontData(
     name: '고딕 A1',
     googleFontName: 'Gothic A1',
+    category: '고딕',
+  ),
+  AppFontType.notoSansKr: AppFontData(
+    name: 'Noto Sans KR',
+    googleFontName: 'Noto Sans KR',
+    category: '고딕',
+  ),
+  AppFontType.ibmPlexSansKr: AppFontData(
+    name: 'IBM Plex Sans KR',
+    googleFontName: 'IBM Plex Sans KR',
+    category: '고딕',
+  ),
+
+  // 명조
+  AppFontType.notoSerifKr: AppFontData(
+    name: 'Noto Serif KR',
+    googleFontName: 'Noto Serif KR',
+    category: '명조',
+  ),
+  AppFontType.nanumMyeongjo: AppFontData(
+    name: '나눔 명조',
+    googleFontName: 'Nanum Myeongjo',
+    category: '명조',
+  ),
+  AppFontType.nanumGothic: AppFontData(
+    name: '나눔 고딕',
+    googleFontName: 'Nanum Gothic',
+    category: '고딕',
+  ),
+
+  // 디스플레이 / 개성
+  AppFontType.doHyeon: AppFontData(
+    name: '도현',
+    googleFontName: 'Do Hyeon',
+    category: '디스플레이',
+  ),
+  AppFontType.jua: AppFontData(
+    name: '주아',
+    googleFontName: 'Jua',
+    category: '디스플레이',
+  ),
+  AppFontType.blackHanSans: AppFontData(
+    name: '블랙한산스',
+    googleFontName: 'Black Han Sans',
+    category: '디스플레이',
+  ),
+  AppFontType.sunflower: AppFontData(
+    name: '해바라기',
+    googleFontName: 'Sunflower',
+    category: '고딕',
   ),
 };
 
@@ -181,7 +270,7 @@ final appThemeTypeProvider =
     StateProvider<AppThemeType>((ref) => AppThemeType.warm);
 
 final appFontTypeProvider =
-    StateProvider<AppFontType>((ref) => AppFontType.nanumPen);
+    StateProvider<AppFontType>((ref) => AppFontType.gowunBatang);
 
 // Derived providers
 final currentThemeDataProvider = Provider<AppThemeData>((ref) {
