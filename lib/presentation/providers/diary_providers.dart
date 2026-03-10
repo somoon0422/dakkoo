@@ -41,6 +41,13 @@ final pageForDateProvider =
   return repo.createPage(date);
 });
 
+// All schedules grouped by date
+final allSchedulesProvider =
+    FutureProvider<Map<String, List<Map<String, dynamic>>>>((ref) async {
+  final db = ref.watch(localDatabaseProvider);
+  return db.getAllSchedules();
+});
+
 // Calendar stickers: date string -> list of emoji
 final calendarStickersProvider =
     FutureProvider<Map<String, List<String>>>((ref) async {

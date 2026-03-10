@@ -9,6 +9,7 @@ import '../providers/theme_providers.dart';
 import '../widgets/common/pressable.dart';
 import '../widgets/home/calendar_view.dart';
 import 'diary_canvas_screen.dart';
+import 'schedule_screen.dart';
 import 'settings_screen.dart';
 
 class HomeScreen extends ConsumerWidget {
@@ -186,6 +187,10 @@ class HomeScreen extends ConsumerWidget {
                         ref.read(selectedDateProvider.notifier).state = date;
                         _openDiaryPage(context, ref, date);
                       },
+                      onScheduleSelected: (date) {
+                        ref.read(selectedDateProvider.notifier).state = date;
+                        _openSchedulePage(context, date);
+                      },
                     ),
                   ),
                 ),
@@ -251,6 +256,31 @@ class HomeScreen extends ConsumerWidget {
         ),
       );
     }
+  }
+
+  void _openSchedulePage(BuildContext context, DateTime date) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            ScheduleScreen(date: date),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, 0.05),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation,
+                curve: Curves.easeOut,
+              )),
+              child: child,
+            ),
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+      ),
+    );
   }
 
   void _showExportDialog(BuildContext context, WidgetRef ref,

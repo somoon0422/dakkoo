@@ -13,6 +13,7 @@ class LocalDatabase {
   static final List<Map<String, dynamic>> _memPages = [];
   static final List<Map<String, dynamic>> _memElements = [];
   static final List<Map<String, dynamic>> _memCalendarStickers = [];
+  static final List<Map<String, dynamic>> _memSchedules = [];
 
   bool get _isWeb => kIsWeb;
 
@@ -78,6 +79,22 @@ class LocalDatabase {
     ''');
     await db.execute(
       'CREATE INDEX idx_calendar_stickers_date ON calendar_stickers(date)',
+    );
+
+    await db.execute('''
+      CREATE TABLE schedules (
+        id TEXT PRIMARY KEY,
+        date TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        emoji TEXT NOT NULL DEFAULT '📅',
+        color TEXT NOT NULL DEFAULT '#FF6B6B',
+        is_done INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX idx_schedules_date ON schedules(date)',
     );
   }
 
@@ -307,6 +324,72 @@ class LocalDatabase {
     }
     final db = await database;
     await db.delete('calendar_stickers', where: 'date = ?', whereArgs: [date]);
+  }
+
+  // Schedule operations
+  Future<void> insertSchedule(Map<String, dynamic> schedule) async {
+    if (_isWeb) {
+      _memSchedules.removeWhere((s) => s['id'] == schedule['id']);
+      _memSchedules.add(schedule);
+      return;
+    }
+    final db = await database;
+    await db.insert('schedules', schedule,
+        conflictAlgorithm: ConflictAlgorithm.replace);
+  }
+
+  Future<List<Map<String, dynamic>>> getSchedulesByDate(String date) async {
+    if (_isWeb) {
+      return _memSchedules
+          .where((s) => s['date'] == date)
+          .toList()
+        ..sort((a, b) =>
+            (a['created_at'] as String).compareTo(b['created_at'] as String));
+    }
+    final db = await database;
+    return db.query('schedules',
+        where: 'date = ?', whereArgs: [date], orderBy: 'created_at ASC');
+  }
+
+  Future<Map<String, List<Map<String, dynamic>>>> getAllSchedules() async {
+    if (_isWeb) {
+      final result = <String, List<Map<String, dynamic>>>{};
+      for (final s in _memSchedules) {
+        final date = s['date'] as String;
+        result.putIfAbsent(date, () => []);
+        result[date]!.add(s);
+      }
+      return result;
+    }
+    final db = await database;
+    final maps = await db.query('schedules', orderBy: 'date ASC, created_at ASC');
+    final result = <String, List<Map<String, dynamic>>>{};
+    for (final m in maps) {
+      final date = m['date'] as String;
+      result.putIfAbsent(date, () => []);
+      result[date]!.add(m);
+    }
+    return result;
+  }
+
+  Future<void> updateSchedule(Map<String, dynamic> schedule) async {
+    if (_isWeb) {
+      final idx = _memSchedules.indexWhere((s) => s['id'] == schedule['id']);
+      if (idx >= 0) _memSchedules[idx] = schedule;
+      return;
+    }
+    final db = await database;
+    await db.update('schedules', schedule,
+        where: 'id = ?', whereArgs: [schedule['id']]);
+  }
+
+  Future<void> deleteSchedule(String id) async {
+    if (_isWeb) {
+      _memSchedules.removeWhere((s) => s['id'] == id);
+      return;
+    }
+    final db = await database;
+    await db.delete('schedules', where: 'id = ?', whereArgs: [id]);
   }
 
   // For export
